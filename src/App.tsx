@@ -9,6 +9,8 @@ import BookForm from "./pages/BookForm";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -41,6 +43,8 @@ const App: React.FC = () => {
           />
           {/* admin-only delete handled in BooksList UI and API role check */}
         </Routes>
+          {/* Toastify container */}
+      <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </>
   );

@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import dayjs from "dayjs";
 import { FaEdit, FaTrash, FaBook, FaSearch, FaUndo } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const BooksList: React.FC = () => {
   const [items, setItems] = useState<BookDto[]>([]);
@@ -32,40 +33,41 @@ const BooksList: React.FC = () => {
       setTotal(t ?? 0);
     } catch (err) {
       console.error(err);
+      toast.error(" Failed to load books");
     }
   };
 
   useEffect(() => { load(); }, [page, pageSize, search, sortBy, desc]);
 
   const onDelete = async (id: number) => {
-    if (!window.confirm("Delete this book?")) return;
     try {
       await api.delete(`/api/books/${id}`);
+      toast.success(" Book deleted successfully!");
       await load();
     } catch (err: any) {
-      alert(err?.response?.data?.message || "Delete failed");
+      toast.error(err?.response?.data?.message || " Delete failed");
     }
   };
 
   const onBorrow = async (id: number) => {
     try {
       const r = await api.post(`/api/books/${id}/borrow`);
-      alert(`${r.data?.message ?? "Borrowed"}. Borrowing ID: ${r.data?.borrowingId ?? "N/A"}`);
+      toast.success(` Borrowed successfully! Borrowing ID: ${r.data?.borrowingId ?? "N/A"}`);
       await load();
     } catch (err: any) {
-      alert(err?.response?.data?.message || "Borrow failed");
+      toast.error(err?.response?.data?.message || " Borrow failed");
     }
   };
 
   const onReturn = async (borrowingId: number) => {
     try {
       const r = await api.post(`/api/books/${borrowingId}/return`);
-      alert(`${r.data?.message ?? "Returned"}.`);
+      toast.success(" Book returned successfully!");
       setShowModal(false);
       setBorrowingIdInput("");
       await load();
     } catch (err: any) {
-      alert(err?.response?.data?.message || "Return failed");
+      toast.error(err?.response?.data?.message || " Return failed");
     }
   };
 
@@ -133,12 +135,19 @@ const BooksList: React.FC = () => {
                     </button>
                   )}
                   {isAdmin && (
-                    <button className="btn btn-sm btn-danger me-1" onClick={() => onDelete(b.id)}>
+                    <button
+                      className="btn btn-sm btn-danger me-1"
+                      onClick={() => onDelete(b.id)}
+                    >
                       <FaTrash />
                     </button>
                   )}
                   {isAuthenticated && (
-                    <button className="btn btn-sm btn-info text-white me-1" onClick={() => onBorrow(b.id)} disabled={b.quantity <= 0}>
+                    <button
+                      className="btn btn-sm btn-info text-white me-1"
+                      onClick={() => onBorrow(b.id)}
+                      disabled={b.quantity <= 0}
+                    >
                       <FaBook /> Borrow
                     </button>
                   )}
@@ -185,22 +194,22 @@ const BooksList: React.FC = () => {
                 <h5 className="modal-title">Return Book</h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
-             <div className="modal-body">
-  <p>
-    Enter the Borrowing ID for <strong>{selectedBook?.title}</strong>:
-  </p>
-  <input
-    type="number"
-    className="form-control"
-    placeholder="Borrowing ID"
-    value={borrowingIdInput}
-    onChange={(e) => setBorrowingIdInput(e.target.value)}
-    min={1} 
-  />
-  {borrowingIdInput !== "" && Number(borrowingIdInput) <= 0 && (
-    <small className="text-danger">Borrowing ID must be greater than 0.</small>
-  )}
-</div>
+              <div className="modal-body">
+                <p>
+                  Enter the Borrowing ID for <strong>{selectedBook?.title}</strong>:
+                </p>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Borrowing ID"
+                  value={borrowingIdInput}
+                  onChange={(e) => setBorrowingIdInput(e.target.value)}
+                  min={1} 
+                />
+                {borrowingIdInput !== "" && Number(borrowingIdInput) <= 0 && (
+                  <small className="text-danger">Borrowing ID must be greater than 0.</small>
+                )}
+              </div>
 
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
@@ -208,7 +217,7 @@ const BooksList: React.FC = () => {
                   className="btn btn-success"
                   onClick={() => {
                     if (!borrowingIdInput.trim()) {
-                      alert("Please enter a Borrowing ID.");
+                      toast.error("⚠️ Please enter a Borrowing ID.");
                       return;
                     }
                     onReturn(Number(borrowingIdInput));

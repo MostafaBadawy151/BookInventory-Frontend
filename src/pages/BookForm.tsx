@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/axios";
 import type { BookCreateDto, BookUpdateDto, BookDto } from "../types";
+import { toast } from "react-toastify";
 
 const BookForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,15 +58,15 @@ const BookForm: React.FC = () => {
 
       if (editMode) {
         await api.put(`/api/books/${id}`, payload);
-        alert("✅ Book updated successfully!");
+        toast.success(" Book updated successfully!");
       } else {
         await api.post("/api/books", payload);
-        alert("✅ Book added successfully!");
+        toast.success(" Book added successfully!");
       }
 
-      nav("/books");
+      setTimeout(() => nav("/books"), 1500); // give user time to see toast
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Save failed");
+      toast.error(err?.response?.data?.message || " Save failed");
     } finally {
       setSaving(false);
     }
